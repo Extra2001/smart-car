@@ -1,0 +1,845 @@
+#include "stm32f10x.h"
+#include "interface.h"
+#include "OLED_Driver.h"
+#include "IRCtrol.h"
+#include "motor.h"
+#include "UltrasonicCtrol.h"
+#include "SpeedCtrol.h"
+#include "sys.h"	
+#include "key.h"
+#include "delay.h"	
+#include "mpu6050.h"
+#include "inv_mpu.h"
+#include "inv_mpu_dmp_motion_driver.h" 
+#include "malloc.h" 
+#include "usart.h"
+//#include "usart2.h"
+#include "common.h" 
+#include "usart3.h"	
+//#include "usmart.h" 
+#include "ov7670.h"
+#include "exti.h"
+#include "timer.h"
+#include "EasyTracer.h"
+
+//全局变量定义
+unsigned int speed_count=0;									//占空比计数器 50次一周期
+char front_left_speed_duty=SPEED_DUTY;
+char front_right_speed_duty=SPEED_DUTY;
+char behind_left_speed_duty=SPEED_DUTY;
+char behind_right_speed_duty=SPEED_DUTY;
+
+unsigned int dis_left,dis_right;
+unsigned int dis_direct;
+
+unsigned char tick_1ms = 0;								//1ms计数器，作为电机的基本计数器
+unsigned char tick_5ms = 0;								//5ms计数器，作为主函数的基本周期
+unsigned char tick_200ms = 0;							//刷新LED闪烁显示
+unsigned char tick_500ms = 0;							//电机驱动延时
+
+unsigned char HalfSpeed = 0;
+unsigned char Stopped = 0;
+
+char ctrl_comm = COMM_STOP;								//控制指令
+char ctrl_comm_last = COMM_STOP;					//上一次的指令
+char RC_comm = COMM_STOP;									//控制指令
+char WF_comm = COMM_STOP;									//控制指令
+unsigned char continue_time=0;
+unsigned char wf_rec_flag=0;							//WIFI上位机控制标志位
+
+unsigned char duoji_count=0;
+unsigned char zhuanjiao = 11;
+
+unsigned char CCD_UD_duoji_count=0;
+unsigned char CCD_UD_zhuanjiao = 11;
+unsigned char CCD_LR_duoji_count=0;
+unsigned char CCD_LR_zhuanjiao = 11;
+
+float pitch,roll,yaw; 					//欧拉角
+short aacx,aacy,aacz;						//加速度传感器原始数据
+short gyrox,gyroy,gyroz;				//陀螺仪原始数据
+short tempIMU;									//温度
+short temp;
+char Bright_check = 0;					//亮度检测结果，1：明亮；0：黑暗
+char Red_light = 0;							//红灯识别结果，1：已识别；0：未识别
+char Green_light = 0;						//绿灯识别结果，1：已识别；0：未识别
+char Identification = 0;				//图形识别结果，待定
+char void_right = 0;						//右侧红外避障结果，1：无障碍；0：有障碍
+char void_left = 0;							//左侧红外避障结果，1：无障碍；0：有障碍
+char Search_L = 0;							//循迹左侧结果，1：有黑线；0：无黑线
+char Search_M = 0;							//循迹中间结果，1：有黑线；0：无黑线
+char Search_R = 0;							//循迹右侧结果，1：有黑线；0：无黑线
+char LF_Light = 0;							//左前灯状态，1：开灯；0：关灯
+char RF_Light = 0;							//右前灯状态，1：开灯；0：关灯
+char LB_Light = 0;							//左后灯状态，1：开灯；0：关灯
+char RB_Light = 0;							//右后灯状态，1：开灯；0：关灯
+
+char Is_Display = 0;						//是否通过串口发送视频
+char Is_Movebyline = 0;					//是否循迹
+char key = 0;										//按键输入
+
+extern u8 ov_sta;								//在exit.c里面定义
+
+void CCDDown()
+{
+	if (CCD_UD_zhuanjiao >9) CCD_UD_zhuanjiao--;
+	Delayms(100);
+}
+
+void CCDUp()
+{
+	if (CCD_UD_zhuanjiao <17) CCD_UD_zhuanjiao++;
+	Delayms(100);
+}
+
+void CCDRight()
+{
+	if (CCD_LR_zhuanjiao >6) CCD_LR_zhuanjiao--;
+	Delayms(100);
+}
+
+void CCDLeft()
+{
+	if (CCD_LR_zhuanjiao <16) CCD_LR_zhuanjiao++;
+	Delayms(100);
+}
+
+void CCDCenter()
+{
+	CCD_UD_zhuanjiao = 11;
+	Delayms(100);
+	CCD_LR_zhuanjiao = 11;
+	Delayms(100);
+}
+
+void DuojiMid()
+{
+	zhuanjiao = 11;
+	Delayms(100);
+}
+
+void DuojiRight()
+{
+	zhuanjiao = 8; 
+	Delayms(100);
+}
+
+void DuojiLeft()
+{
+	zhuanjiao = 14; 
+	Delayms(100);
+}
+
+
+//测量三个方向的距离
+void GetAllDistance(unsigned int *dis_left,unsigned int *dis_right,unsigned int *dis_direct)
+{
+	Delayms(50);
+	GetDistanceDelay();
+	*dis_direct = distance_cm;//获取中央距离
+	
+	DuojiRight();
+	Delayms(50);
+	GetDistanceDelay();//获取右边距离
+	*dis_right = distance_cm;
+	
+	DuojiMid();
+	DuojiLeft();
+	Delayms(50);
+	GetDistanceDelay();//获取左边距离
+	*dis_left = distance_cm;
+	
+	DuojiMid();//归位
+}
+
+//仅测量中央距离
+void GetMidDistance(unsigned int *dis_direct)
+{
+	GetDistanceDelay();
+	*dis_direct = distance_cm;
+}
+
+//左右红外避障检测
+void BarrierProcIR(void)
+{	
+	if(VOID_L_IO == BARRIER_Y)
+	{
+		void_left = 0;
+		display_list_char(2,0,"0");	
+	}		
+	else
+	{
+		void_left = 1;
+		display_list_char(2,0,"1");	
+	}
+	if(VOID_R_IO == BARRIER_Y)
+	{
+		void_right = 0;
+		display_list_char(3,0,"0");	
+	}		
+	else
+	{
+		void_right = 1;
+		display_list_char(3,0,"1");	
+	}
+}
+
+//环境光亮度检测
+void BrightCheck(void)
+{
+	char BriChk;
+	BriChk = BRIGHT_IO;
+	if (BriChk == BRIGHT_Y) //环境明亮，关灯
+	{
+		LF_Light_RESET;
+		RF_Light_RESET;
+		LB_Light_RESET;
+		RB_Light_RESET;
+		LF_Light = 0;
+		RF_Light = 0;
+		LB_Light = 0;
+		RB_Light = 0;
+		Bright_check = 1;
+		display_list_char(0,0,"1");	
+	}
+	else if (BriChk == BRIGHT_N) //环境黑暗，开灯
+	{
+		LF_Light_SET;
+		RF_Light_SET;
+		LB_Light_SET;
+		RB_Light_SET;
+		LF_Light = 1;
+		RF_Light = 1;
+		LB_Light = 1;
+		RB_Light = 1;
+		Bright_check = 0;
+		display_list_char(0,0,"0");	
+	}
+}
+
+//循迹，通过判断三个光电对管的状态来控制小车运动
+void SearchLine(void)
+{
+	if(SEARCH_L_IO == BLACK_AREA)
+	{
+		Search_L = 1;
+		display_list_char(4,0,"1");	
+	}
+	else
+	{
+		Search_L = 0;
+		display_list_char(4,0,"0");	
+	}
+	if(SEARCH_M_IO == BLACK_AREA)
+	{
+		Search_M = 1;
+		display_list_char(5,0,"1");	
+	}
+	else
+	{
+		Search_M = 0;
+		display_list_char(5,0,"0");	
+	}
+	if(SEARCH_R_IO == BLACK_AREA)
+	{
+		Search_R = 1;
+		display_list_char(6,0,"1");	
+	}
+	else
+	{
+		Search_R = 0;
+		display_list_char(6,0,"0");	
+	}
+}
+
+//小车运动控制
+void Move(void)
+{
+	if(dis_direct < 20 ||void_right == BARRIER_Y || void_left == BARRIER_Y)
+	{
+		if(ctrl_comm != COMM_DOWN) ctrl_comm = COMM_STOP;
+	}
+	else
+	{
+		if(Is_Movebyline == 1) //循迹行车
+		{			
+			if(Search_M == BLACK_AREA && Search_L == BLACK_AREA && Search_R == BLACK_AREA)//三路黑线，可能下桥
+			{
+				if(Stopped == 0)
+				{
+					HalfSpeed = 1;						//减速
+					ctrl_comm = COMM_UP;
+				}
+				else
+				{
+					HalfSpeed = 0;						//恢复原速
+					ctrl_comm = COMM_STOP;		//延时到，停车
+				}
+			}
+			else
+			{			
+				Stopped = 0;
+				if(Search_M == BLACK_AREA) //中路黑线，前进
+				{
+					HalfSpeed = 0;
+					ctrl_comm = COMM_UP;
+				}
+				else if(Search_R == BLACK_AREA) //右路黑线，右转
+				{
+					HalfSpeed = 1;
+					ctrl_comm = COMM_RIGHT;
+				}
+				else if(Search_L == BLACK_AREA) //左路黑线，左转
+				{
+					HalfSpeed = 1;
+					ctrl_comm = COMM_LEFT;
+				}
+				else
+				{
+					HalfSpeed = 0;								//三路无黑线，停车
+					ctrl_comm = COMM_STOP;
+				}
+			}
+		}
+		//else //不循迹行车，暂时不需另加代码
+		//{
+		//}
+	}
+	
+	if(ctrl_comm_last != ctrl_comm)			//指令行车；指令发生变化
+	{
+		ctrl_comm_last = ctrl_comm;
+		switch(ctrl_comm)
+		{
+			case COMM_UP:    
+			{	
+				CarGo();
+				display_list_char(8,0,"^");
+				break;
+			}
+			case COMM_DOWN:  
+			{
+				CarBack();
+				display_list_char(8,0,"v");
+				break;
+			}
+			case COMM_LEFT:  
+			{
+				CarLeft();
+				display_list_char(8,0,"<");
+				break;
+			}
+			case COMM_RIGHT: 
+			{
+				CarRight();
+				display_list_char(8,0,">");
+				break;
+			}
+			case COMM_STOP:  
+			{
+				CarStop();
+				display_list_char(8,0,"X");
+				break;
+			}
+			default : break;
+		}
+		Delayms(2);//防抖
+	}
+}
+
+//控制信号接收
+void SignalReceive(void)
+{
+	atk_8266_wifista_Rece();
+	
+	if(wf_rec_flag == 1)	//接收到WIFI信号
+	{
+		wf_rec_flag = 0;
+		switch(WF_comm)
+		{
+			case COMM_UP:    	ctrl_comm = COMM_UP;break;
+			case COMM_DOWN:  	ctrl_comm = COMM_DOWN;break;
+			case COMM_LEFT:  	ctrl_comm = COMM_LEFT;break;
+			case COMM_RIGHT: 	ctrl_comm = COMM_RIGHT;break;
+			case COMM_STOP:  	ctrl_comm = COMM_STOP;break;
+			case CCD_UP:  		CCDUp();break;
+			case CCD_DOWN:  	CCDDown();break;
+			case CCD_LEFT:  	CCDLeft();break;
+			case CCD_RIGHT:  	CCDRight();break;
+			case CCD_CENTER:  CCDCenter();break;
+			default : break;
+		}
+	}
+	if(ir_rec_flag == 1)	//接收到红外信号
+	{
+		ir_rec_flag = 0;
+		switch(RC_comm)
+		{
+			case COMM_UP:    	ctrl_comm = COMM_UP;break;
+			case COMM_DOWN:  	ctrl_comm = COMM_DOWN;break;
+			case COMM_LEFT:  	ctrl_comm = COMM_LEFT;break;
+			case COMM_RIGHT: 	ctrl_comm = COMM_RIGHT;break;
+			case COMM_STOP:  	ctrl_comm = COMM_STOP;break;
+			case CCD_UP:  		CCDUp();break;
+			case CCD_DOWN:  	CCDDown();break;
+			case CCD_LEFT:  	CCDLeft();break;
+			case CCD_RIGHT: 	CCDRight();break;
+			case CCD_CENTER:  CCDCenter();break;
+			default : break;
+		}
+	}
+}
+
+//获取惯性测量单元数据
+void MPU_RUN(void)
+{
+	u8 t=0;
+
+	if(mpu_dmp_get_data(&pitch,&roll,&yaw)==0)
+	{ 
+		tempIMU=MPU_Get_Temperature();								//得到温度值
+		MPU_Get_Accelerometer(&aacx,&aacy,&aacz);			//得到加速度传感器数据
+		MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);			//得到陀螺仪数据
+		if((t%10)==0)
+		{ 
+			temp=tempIMU;
+			if(temp<0)
+			{
+				display_list_char(2,2,"-");								//显示负号
+				temp=-temp;																//转为正数
+			}else display_list_char(2,2," ");						//去掉负号
+			if (temp/100 >= 10)
+			{
+				display_num(3,2,temp/100);								//显示整数部分	
+			}
+			else
+			{
+				display_num(3,2,0);												//显示整数部分	
+				display_num(4,2,temp/100);								//显示整数部分	
+			}  
+			display_num(6,2,(temp/10)%10);							//显示小数部分
+			
+			temp=roll*10;
+			if(temp<0)
+			{
+				display_list_char(10,2,"-");							//显示负号
+				temp=-temp;																//转为正数
+			}else display_list_char(10,2," ");					//去掉负号 
+			if(temp/10 >= 100)
+			{
+				display_num(11,2,temp/10);								//显示整数部分	  	    
+			}
+			else if (temp/10 >= 10 && temp/10 < 100)
+			{
+				display_num(11,2,0);											//显示整数部分	
+				display_num(12,2,temp/10);								//显示整数部分	
+			}
+			else if (temp/10 < 10)
+			{
+				display_num(11,2,0);											//显示整数部分	
+				display_num(12,2,0);											//显示整数部分	
+				display_num(13,2,temp/10);								//显示整数部分	
+			}
+			display_num(15,2,temp%10);									//显示小数部分 
+			
+			temp=pitch*10;
+			if(temp<0)
+			{
+				display_list_char(2,3,"-");								//显示负号
+				temp=-temp;																//转为正数
+			}else display_list_char(2,3," ");						//去掉负号 
+			if (temp/10 >= 10)
+			{
+				display_num(3,3,temp/10);									//显示整数部分	
+			}
+			else
+			{
+				display_num(3,3,0);												//显示整数部分	
+				display_num(4,3,temp/10);									//显示整数部分	
+			} 	    
+			display_num(6,3,temp%10);										//显示小数部分 
+			
+			temp=yaw*10;
+			if(temp<0)
+			{
+				display_list_char(10,3,"-");							//显示负号
+				temp=-temp;																//转为正数
+			}else display_list_char(10,3," ");					//去掉负号 
+			if(temp/10 >= 100)
+			{
+				display_num(11,3,temp/10);								//显示整数部分	  	    
+			}
+			else if (temp/10 >= 10 && temp/10 < 100)
+			{
+				display_num(11,3,0);											//显示整数部分	
+				display_num(12,3,temp/10);								//显示整数部分	
+			}
+			else if (temp/10 < 10)
+			{
+				display_num(11,3,0);											//显示整数部分	
+				display_num(12,3,0);											//显示整数部分	
+				display_num(13,3,temp/10);								//显示整数部分	
+			}
+			display_num(15,3,temp%10);									//显示小数部分  
+			t=0;
+		}
+	}
+	t++; 
+}
+
+//摄像头采集图像
+void camera_refresh(void)
+{
+	u8 i,j;
+	u16 color;
+	u8 c1,c2;
+	
+	if(ov_sta)//有帧中断更新
+	{
+		display_list_char(10,0,"*");
+		
+		OV7670_RRST=0;				//开始复位读指针
+		OV7670_RCK_L;
+		OV7670_RCK_H;
+		OV7670_RCK_L;
+		OV7670_RRST=1;				//复位读指针结束
+		OV7670_RCK_H;
+
+		for(i=0;i<240;i++) 		//图像高度
+		{
+			for(j=0;j<120;j++)	//图像宽度
+			{		
+				OV7670_RCK_L;
+				c1 = GPIOC->IDR&0xFF;	//读数据
+				color = c1;
+				OV7670_RCK_H;  
+				color <<= 8;
+				OV7670_RCK_L;
+				c2 = GPIOC->IDR&0xFF;	//读数据
+				color |= c2;
+				OV7670_RCK_H;  
+				OV7670pic[j][i] = color;
+				
+				//c3 = color&0x00ff;
+				//c4 = (color>>8)&0x00ff;
+				//printf("%c%c",c4,c3);				//通过串口1(UART)发送至上位机
+				
+				//u3_printf("%c",c1);
+				//u3_printf("%c",c2);
+				//=============================================
+				//简易颜色识别...
+				//color_r = color&0xf800;
+				//color_r >>= 11;
+				//color_g = color&0x07e0;
+				//color_g >>= 5;
+				//color_b = color&0x001f;
+				//color_r_sum+=color_r;
+				//color_g_sum+=color_g;
+				//=============================================
+			}
+			////u3_printf("\r\n");//通过串口发送至上位机
+			
+		}
+		ov_sta=0;					//清零帧中断标记
+		display_list_char(10,0," ");
+	} 
+}	   
+
+void Uart_Display(void)
+{
+	u8 i,j;
+	u8 c1,c2;
+	u16 color;
+	
+	for(i=0;i<240;i++) //QVGA时设为240
+	{
+		for(j=0;j<120;j++)	//QVGA时设为8,可检测一窄条
+		{
+			color = OV7670pic[j][i];
+			c2 = color&0x00ff;
+			c1 = (color>>8)&0x00ff;
+			printf("%c%c",c1,c2);				//通过串口1(UART)发送至上位机
+		}
+	}
+	/*
+	for(i=0;i<240;i++) //显示完毕清除数组
+	{
+		for(j=0;j<120;j++)
+		{
+			color = 0;
+		}
+	}
+	*/
+}
+
+int main(void)
+{
+	u8 OV7670i=3,OV7670res=0;
+	//自动白平衡自动曝光自动增益，饱和度+1，亮度-1，对比度+1
+	u8 lightmode=0,saturation=4,brightness=2,contrast=2,effect=0;
+	RESULT Resu;
+	
+	//{最小色调,最大色调,最小饱和度,最大饱和度,最小亮度,最大亮度,最小宽度,最小高度,最大宽度,最大高度}
+	TARGET_CONDI Condition_Green=	{ 60,100, 50,255, 50,255, 15, 15,100,200};
+	TARGET_CONDI Condition_Red1=	{  0, 15, 50,255, 50,255, 15, 15,100,200};
+	TARGET_CONDI Condition_Red2=	{225,255, 50,255, 50,255, 15, 15,100,200};
+	TARGET_CONDI Condition_Black=	{  0,255,  0,255,  0, 40, 30, 15,100,200};
+	
+	delay_init_O();
+	delay_init();
+	GPIOCLKInit();
+	UserLEDInit();
+	IRCtrolInit();
+	TIM2_Init();
+	MotorInit();
+	UltraSoundInit();
+	//RedRayInit();
+	ServoInit();
+	SPI1_Init();
+	OLED_Init();
+	BrightInit();
+	LightInit();
+	KEY_Init();
+	mem_init();						//初始化内存池
+	uart_init(115200);  	//初始化串口1，波特率为115200，用于USMART
+	USART3_Init(115200);  //初始化串口3，波特率为115200，用于WIFI模块
+	//usmart_init(72);		//72MHz
+	MPU_Init();	
+	mpu_dmp_init();
+	while(OV7670i--)							//尝试3次初始化OV7670
+	{
+		OV7670res = OV7670_Init();	
+		if (OV7670res == 0) break;	//成功
+		else Delayms(50);						//失败
+	}
+	//Delayms(1000);
+	OV7670_Light_Mode(lightmode);
+	OV7670_Color_Saturation(saturation);
+	OV7670_Brightness(brightness);
+	OV7670_Contrast(contrast);
+ 	OV7670_Special_Effects(effect);	
+	//OV7670_AGCAEC();									//禁止自动AGC、AEC
+	EXTI8_Init();												//使能定时器捕获
+	if (OV7670res == 0) OV7670_Window_Set(12,298,240,120);	//设置窗口	12,176,240,320  
+  OV7670_CS=0;
+	//Delayms(1000);
+	//atk_8266_send_cmd("AT","OK",20);
+
+	LCD_All();
+	Delayms(50);
+	LCD_Clear();
+	
+	display_list_char(0,1,"D:000cm");
+	display_list_char(8,1,"S:000c/s");
+	display_list_char(0,2,"T:-00.0");
+	display_list_char(8,2,"R:-000.0");
+	display_list_char(0,3,"P:-00.0");
+	display_list_char(8,3,"Y:-000.0");
+	display_list_char(0,0,"WIFI");	
+	//display_list_char(0,0,"0 00000");	
+	if (OV7670res == 0) display_list_char(11,0,"---");
+	else 
+	{
+		display_list_char(11,0,"XXX");
+		display_num(12,0,OV7670res);	//显示失败代码
+	}
+	display_list_char(8,0,"X");
+	display_list_char(14,0,"00");	
+	
+	DuojiMid();
+	CCDCenter();
+
+	//=========================================================================
+	//WIFI模块上电自动进入透传模式，如不需要修改WIFI配置，可将初始化部分注释掉
+	atk_8266_wifista_Init();
+	//=========================================================================
+	//display_list_char(5,0,"OK");	
+	//Delayms(500);
+	display_list_char(0,0,"0 00000");	
+
+	//u3_printf("%c",PICH); //为DomekTool提供图像头标识
+	//u3_printf("%c%c",PICH0,PICH1); //为多功能调试助手提供图像头尾标识
+	//Delayms(2);
+	//camera_refresh();
+	//Delayms(2);
+	//u3_printf("%c%c",PICH1,PICH0); //为多功能调试助手提供图像头尾标识
+	//======================================================================
+	//简易颜色识别...
+	//red_init = color_r_sum/2000;//取大数即可
+	//display_longnum(8,3,red_init);
+	//green_init = color_g_sum/4000;
+	//display_longnum(12,3,green_init);
+	//======================================================================
+	//HalfSpeed = 0;
+	
+ while(1)
+ {	 
+	  if(tick_5ms >= 5)
+		{
+			tick_5ms = 0;
+			tick_200ms++;
+			
+			key = KEY_Scan(0);
+			if(key == KEY1_PRES) //按键1：是否通过串口发送图像
+			{
+				if(Is_Display == 0)
+				{
+					Is_Display = 1;
+					display_list_char(14,0,"1");	
+				}
+				else
+				{
+					Is_Display = 0;
+					display_list_char(14,0,"0");
+				}
+			}
+			else if(key == KEY2_PRES) //按键2：是否循迹行车
+			{
+				if(Is_Movebyline == 0)
+				{
+					Is_Movebyline = 1;
+					display_list_char(15,0,"1");	
+				}
+				else
+				{
+					Is_Movebyline = 0;
+					display_list_char(15,0,"0");
+				}	
+			}
+			
+			if(tick_200ms >= 4)	//实测调整
+			{
+				tick_200ms = 0;
+				LEDToggle(LED_PIN);
+				///atk_8266_wifista_Tran();//
+				///display_list_char(5,3,"OK");	
+				//u3_printf("%c%c",PICH0,PICH1); //为多功能调试助手提供图像头尾标识
+				//Delayms(2);
+				if (OV7670res == 0)
+				{
+					camera_refresh();
+					//Delayms(2);
+					//=========================================================================
+					//简易颜色识别...
+					//display_longnum(10,3,color_r_sum/2000);
+					//display_longnum(14,3,color_g_sum/4000);
+					//if ((color_r_sum/2000)>(red_init+5))display_list_char(7,3,"R");
+					//else if ((color_g_sum/4000)>(green_init+5))display_list_char(7,3,"G");
+					//else display_list_char(7,3,"N");
+					//=========================================================================
+					//u3_printf("%c%c",PICH1,PICH0); //为多功能调试助手提供图像头尾标识
+					
+					if(Trace(&Condition_Red1,&Resu))
+					{
+						display_list_char(11,0,"R");
+						if(Is_Display == 0) printf("Red_1:%d,%d,%d,%d\r\n",Resu.x,Resu.y,Resu.w,Resu.h);	//通过串口1发送至上位机
+						Red_light = 1;
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,Resu.w,1,0xf800);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0xf800);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y+Resu.h/2,Resu.w,1,0xf800);
+						Disp_FillArea(Resu.x+Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0xf800);
+						Disp_FillArea(Resu.x-2,Resu.y-2,4,4,0xf800);
+					}
+					else if(Trace(&Condition_Red2,&Resu))
+					{
+						display_list_char(11,0,"R");
+						if(Is_Display == 0) printf("Red_2:%d,%d,%d,%d\r\n",Resu.x,Resu.y,Resu.w,Resu.h);	//通过串口1发送至上位机
+						Red_light = 1;
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,Resu.w,1,0xf800);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0xf800);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y+Resu.h/2,Resu.w,1,0xf800);
+						Disp_FillArea(Resu.x+Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0xf800);
+						Disp_FillArea(Resu.x-1,Resu.y-1,2,2,0xf800);
+					}
+					else
+					{
+						display_list_char(11,0,"-");
+						Red_light = 0;
+					}
+					
+					if(Trace(&Condition_Green,&Resu))
+					{
+						display_list_char(12,0,"G");
+						if(Is_Display == 0) printf("Green:%d,%d,%d,%d\r\n",Resu.x,Resu.y,Resu.w,Resu.h);	//通过串口1发送至上位机
+						Green_light = 1;
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,Resu.w,1,0x07e0);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0x07e0);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y+Resu.h/2,Resu.w,1,0x07e0);
+						Disp_FillArea(Resu.x+Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0x07e0);
+						Disp_FillArea(Resu.x-2,Resu.y-2,4,4,0x07e0);
+					}
+					else
+					{
+						display_list_char(12,0,"-");
+						Green_light = 0;
+					}
+					
+					if(Trace(&Condition_Black,&Resu))
+					{
+						display_list_char(13,0,"B");
+						if(Is_Display == 0) printf("Black:%d,%d,%d,%d\r\n",Resu.x,Resu.y,Resu.w,Resu.h);	//通过串口1发送至上位机
+						Identification = 1;
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,Resu.w,1,0x0000);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0x0000);
+						Disp_FillArea(Resu.x-Resu.w/2,Resu.y+Resu.h/2,Resu.w,1,0x0000);
+						Disp_FillArea(Resu.x+Resu.w/2,Resu.y-Resu.h/2,1,Resu.h,0x0000);
+						Disp_FillArea(Resu.x-2,Resu.y-2,4,4,0x0000);
+					}
+					else
+					{
+						display_list_char(13,0,"-");
+						Identification = 0;
+					}
+					
+					if(Is_Display == 1) Uart_Display();	//串口发送图像至上位机
+				}
+				
+				//OV7670_AGCAEC();									//显示AGC、AEC的实时结果用
+				
+				atk_8266_wifista_Tran();					//发送数据至上位机 中速
+				
+				tick_500ms++;
+				if(tick_500ms >= 3)									//改变此值调整过桥延时长短
+				{
+					tick_500ms = 0;
+					if(Is_Movebyline == 1)
+					{
+						if(Search_M == BLACK_AREA && Search_L == BLACK_AREA && Search_R == BLACK_AREA)
+						{
+							if(Stopped == 0) Stopped = 1;		//循迹上桥延迟
+						}
+					}
+					//atk_8266_wifista_Tran();					//发送数据至上位机 慢速
+				}
+				
+				//GetAllDistance(&dis_left,&dis_right,&dis_direct);	//测量左中右三向距离
+				
+			}
+			
+			//CarGo();//测试用开车
+				
+			GetMidDistance(&dis_direct); 	//只测中央距离
+			
+			BarrierProcIR();
+			
+			SearchLine();
+			
+			BrightCheck();
+			
+			MPU_RUN();
+			
+			SignalReceive();	
+			
+			Move();
+			
+			//MeasureSpeed();							//测速
+			
+			//atk_8266_wifista_Tran();		//发送数据至上位机 快速
+			
+		}
+		MeasureSpeed();							//测速
+		
+		//atk_8266_wifista_Tran();		//发送数据至上位机 超快速
+ }
+}
+
