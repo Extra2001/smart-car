@@ -1,13 +1,6 @@
 #ifndef __MOTION_H_
 #define __MOTION_H_
 
-extern char WF_comm;              //控制指令
-extern unsigned char wf_rec_flag; // WIFI上位机控制标志位
-extern float pitch, roll, yaw;    //欧拉角
-extern short aacx, aacy, aacz;    //加速度传感器原始数据
-extern short gyrox, gyroy, gyroz; //陀螺仪原始数据
-extern short tempIMU;             //温度
-extern char Bright_check;         //亮度检测结果
 extern char Red_light;            //红灯识别结果
 extern char Green_light;          //绿灯识别结果
 extern char Identification;       //图形识别结果
@@ -16,24 +9,14 @@ extern char void_left;            //左侧红外检测结果
 extern char Search_L;             //循迹左侧结果
 extern char Search_M;             //循迹中间结果
 extern char Search_R;             //循迹右侧结果
-extern char LF_Light;             //左前灯状态
-extern char RF_Light;             //右前灯状态
-extern char LB_Light;             //左后灯状态
-extern char RB_Light;             //右后灯状态
-extern char Is_Display;           //是否通过串口发送图像
-extern char ctrl_comm;            //上一次的指令
-extern char turn_speed_duty;
-
-extern unsigned char left_speed;
-extern unsigned char right_speed;
-extern unsigned char avg_speed;
-
-extern char turn_on;
+extern char ctrl_comm;            //小车控制指令
 
 extern float Kp;
 extern float Ki;
 extern float Kd;
-extern char pid_on;
+extern char search_line_mode;
+extern char front_duty;
+extern char behind_duty;
 
 void ToggleSearchLine(void);
 void Move(void);

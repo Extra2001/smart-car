@@ -50,9 +50,7 @@
             this.label33 = new System.Windows.Forms.Label();
             this.textBox29 = new System.Windows.Forms.TextBox();
             this.label29 = new System.Windows.Forms.Label();
-            this.textBox20 = new System.Windows.Forms.TextBox();
             this.textBox31 = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
             this.label31 = new System.Windows.Forms.Label();
             this.textBox21 = new System.Windows.Forms.TextBox();
             this.label21 = new System.Windows.Forms.Label();
@@ -107,16 +105,12 @@
             this.textBox28 = new System.Windows.Forms.TextBox();
             this.label28 = new System.Windows.Forms.Label();
             this.button15 = new System.Windows.Forms.Button();
-            this.button14 = new System.Windows.Forms.Button();
-            this.textBox27 = new System.Windows.Forms.TextBox();
-            this.label27 = new System.Windows.Forms.Label();
             this.button13 = new System.Windows.Forms.Button();
             this.button12 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
             this.textBox24 = new System.Windows.Forms.TextBox();
             this.label24 = new System.Windows.Forms.Label();
-            this.button9 = new System.Windows.Forms.Button();
             this.textBox25 = new System.Windows.Forms.TextBox();
             this.button8 = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
@@ -127,6 +121,11 @@
             this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.label27 = new System.Windows.Forms.Label();
+            this.textBox27 = new System.Windows.Forms.TextBox();
+            this.textBox33 = new System.Windows.Forms.TextBox();
+            this.label34 = new System.Windows.Forms.Label();
+            this.label35 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -296,13 +295,15 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.label35);
+            this.groupBox4.Controls.Add(this.label34);
+            this.groupBox4.Controls.Add(this.textBox33);
+            this.groupBox4.Controls.Add(this.textBox27);
             this.groupBox4.Controls.Add(this.textBox32);
             this.groupBox4.Controls.Add(this.label33);
             this.groupBox4.Controls.Add(this.textBox29);
             this.groupBox4.Controls.Add(this.label29);
-            this.groupBox4.Controls.Add(this.textBox20);
             this.groupBox4.Controls.Add(this.textBox31);
-            this.groupBox4.Controls.Add(this.label20);
             this.groupBox4.Controls.Add(this.label31);
             this.groupBox4.Controls.Add(this.textBox21);
             this.groupBox4.Controls.Add(this.label21);
@@ -385,14 +386,7 @@
             this.label29.Name = "label29";
             this.label29.Size = new System.Drawing.Size(117, 28);
             this.label29.TabIndex = 73;
-            this.label29.Text = "转弯占空比";
-            // 
-            // textBox20
-            // 
-            this.textBox20.Location = new System.Drawing.Point(261, 648);
-            this.textBox20.Name = "textBox20";
-            this.textBox20.Size = new System.Drawing.Size(90, 34);
-            this.textBox20.TabIndex = 49;
+            this.label29.Text = "后轮占空比";
             // 
             // textBox31
             // 
@@ -401,15 +395,6 @@
             this.textBox31.Size = new System.Drawing.Size(90, 34);
             this.textBox31.TabIndex = 72;
             // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(159, 651);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(96, 28);
-            this.label20.TabIndex = 48;
-            this.label20.Text = "差速因子";
-            // 
             // label31
             // 
             this.label31.AutoSize = true;
@@ -417,7 +402,7 @@
             this.label31.Name = "label31";
             this.label31.Size = new System.Drawing.Size(117, 28);
             this.label31.TabIndex = 71;
-            this.label31.Text = "直行占空比";
+            this.label31.Text = "前轮占空比";
             // 
             // textBox21
             // 
@@ -591,7 +576,7 @@
             // 
             this.textBox18.Location = new System.Drawing.Point(174, 257);
             this.textBox18.Name = "textBox18";
-            this.textBox18.Size = new System.Drawing.Size(213, 34);
+            this.textBox18.Size = new System.Drawing.Size(81, 34);
             this.textBox18.TabIndex = 30;
             // 
             // label18
@@ -599,15 +584,15 @@
             this.label18.AutoSize = true;
             this.label18.Location = new System.Drawing.Point(6, 257);
             this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(138, 28);
+            this.label18.Size = new System.Drawing.Size(159, 28);
             this.label18.TabIndex = 29;
-            this.label18.Text = "占空比（右）";
+            this.label18.Text = "占空比（左后）";
             // 
             // textBox19
             // 
             this.textBox19.Location = new System.Drawing.Point(174, 217);
             this.textBox19.Name = "textBox19";
-            this.textBox19.Size = new System.Drawing.Size(213, 34);
+            this.textBox19.Size = new System.Drawing.Size(81, 34);
             this.textBox19.TabIndex = 28;
             // 
             // label19
@@ -615,9 +600,9 @@
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(6, 220);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(138, 28);
+            this.label19.Size = new System.Drawing.Size(159, 28);
             this.label19.TabIndex = 27;
-            this.label19.Text = "占空比（左）";
+            this.label19.Text = "占空比（左前）";
             // 
             // textBox15
             // 
@@ -797,6 +782,7 @@
             // 
             // groupBox5
             // 
+            this.groupBox5.Controls.Add(this.label27);
             this.groupBox5.Controls.Add(this.label32);
             this.groupBox5.Controls.Add(this.button18);
             this.groupBox5.Controls.Add(this.textBox30);
@@ -805,16 +791,12 @@
             this.groupBox5.Controls.Add(this.textBox28);
             this.groupBox5.Controls.Add(this.label28);
             this.groupBox5.Controls.Add(this.button15);
-            this.groupBox5.Controls.Add(this.button14);
-            this.groupBox5.Controls.Add(this.textBox27);
-            this.groupBox5.Controls.Add(this.label27);
             this.groupBox5.Controls.Add(this.button13);
             this.groupBox5.Controls.Add(this.button12);
             this.groupBox5.Controls.Add(this.button11);
             this.groupBox5.Controls.Add(this.button10);
             this.groupBox5.Controls.Add(this.textBox24);
             this.groupBox5.Controls.Add(this.label24);
-            this.groupBox5.Controls.Add(this.button9);
             this.groupBox5.Controls.Add(this.textBox25);
             this.groupBox5.Controls.Add(this.button8);
             this.groupBox5.Controls.Add(this.label25);
@@ -843,7 +825,7 @@
             // 
             // button18
             // 
-            this.button18.Location = new System.Drawing.Point(235, 623);
+            this.button18.Location = new System.Drawing.Point(235, 599);
             this.button18.Name = "button18";
             this.button18.Size = new System.Drawing.Size(175, 40);
             this.button18.TabIndex = 70;
@@ -853,7 +835,7 @@
             // 
             // textBox30
             // 
-            this.textBox30.Location = new System.Drawing.Point(139, 626);
+            this.textBox30.Location = new System.Drawing.Point(139, 602);
             this.textBox30.Name = "textBox30";
             this.textBox30.Size = new System.Drawing.Size(90, 34);
             this.textBox30.TabIndex = 69;
@@ -862,15 +844,15 @@
             // label30
             // 
             this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(16, 629);
+            this.label30.Location = new System.Drawing.Point(16, 605);
             this.label30.Name = "label30";
             this.label30.Size = new System.Drawing.Size(117, 28);
             this.label30.TabIndex = 68;
-            this.label30.Text = "转弯占空比";
+            this.label30.Text = "后轮占空比";
             // 
             // button16
             // 
-            this.button16.Location = new System.Drawing.Point(235, 577);
+            this.button16.Location = new System.Drawing.Point(235, 553);
             this.button16.Name = "button16";
             this.button16.Size = new System.Drawing.Size(175, 40);
             this.button16.TabIndex = 64;
@@ -880,57 +862,30 @@
             // 
             // textBox28
             // 
-            this.textBox28.Location = new System.Drawing.Point(139, 580);
+            this.textBox28.Location = new System.Drawing.Point(139, 556);
             this.textBox28.Name = "textBox28";
             this.textBox28.Size = new System.Drawing.Size(90, 34);
             this.textBox28.TabIndex = 63;
-            this.textBox28.Text = "50";
+            this.textBox28.Text = "10";
             // 
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(16, 583);
+            this.label28.Location = new System.Drawing.Point(16, 559);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(117, 28);
             this.label28.TabIndex = 62;
-            this.label28.Text = "直行占空比";
+            this.label28.Text = "前轮占空比";
             // 
             // button15
             // 
-            this.button15.Location = new System.Drawing.Point(260, 288);
+            this.button15.Location = new System.Drawing.Point(102, 288);
             this.button15.Name = "button15";
-            this.button15.Size = new System.Drawing.Size(150, 40);
+            this.button15.Size = new System.Drawing.Size(308, 40);
             this.button15.TabIndex = 61;
             this.button15.Text = "固定占空比";
             this.button15.UseVisualStyleBackColor = true;
             this.button15.Click += new System.EventHandler(this.button15_Click);
-            // 
-            // button14
-            // 
-            this.button14.Location = new System.Drawing.Point(214, 522);
-            this.button14.Name = "button14";
-            this.button14.Size = new System.Drawing.Size(196, 40);
-            this.button14.TabIndex = 60;
-            this.button14.Text = "更新差速因子";
-            this.button14.UseVisualStyleBackColor = true;
-            this.button14.Click += new System.EventHandler(this.button14_Click);
-            // 
-            // textBox27
-            // 
-            this.textBox27.Location = new System.Drawing.Point(118, 525);
-            this.textBox27.Name = "textBox27";
-            this.textBox27.Size = new System.Drawing.Size(90, 34);
-            this.textBox27.TabIndex = 51;
-            this.textBox27.Text = "0.3";
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(16, 528);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(96, 28);
-            this.label27.TabIndex = 50;
-            this.label27.Text = "差速因子";
             // 
             // button13
             // 
@@ -989,16 +944,6 @@
             this.label24.TabIndex = 54;
             this.label24.Text = "Kd";
             // 
-            // button9
-            // 
-            this.button9.Location = new System.Drawing.Point(6, 288);
-            this.button9.Name = "button9";
-            this.button9.Size = new System.Drawing.Size(150, 40);
-            this.button9.TabIndex = 6;
-            this.button9.Text = "差速因子";
-            this.button9.UseVisualStyleBackColor = true;
-            this.button9.Click += new System.EventHandler(this.button9_Click);
-            // 
             // textBox25
             // 
             this.textBox25.Location = new System.Drawing.Point(77, 385);
@@ -1009,7 +954,7 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(162, 288);
+            this.button8.Location = new System.Drawing.Point(6, 288);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(90, 40);
             this.button8.TabIndex = 5;
@@ -1092,6 +1037,47 @@
             this.button3.Text = "停";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(16, 525);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(96, 28);
+            this.label27.TabIndex = 72;
+            this.label27.Text = "转弯侧：";
+            // 
+            // textBox27
+            // 
+            this.textBox27.Location = new System.Drawing.Point(306, 217);
+            this.textBox27.Name = "textBox27";
+            this.textBox27.Size = new System.Drawing.Size(81, 34);
+            this.textBox27.TabIndex = 77;
+            // 
+            // textBox33
+            // 
+            this.textBox33.Location = new System.Drawing.Point(306, 257);
+            this.textBox33.Name = "textBox33";
+            this.textBox33.Size = new System.Drawing.Size(81, 34);
+            this.textBox33.TabIndex = 78;
+            // 
+            // label34
+            // 
+            this.label34.AutoSize = true;
+            this.label34.Location = new System.Drawing.Point(267, 220);
+            this.label34.Name = "label34";
+            this.label34.Size = new System.Drawing.Size(33, 28);
+            this.label34.TabIndex = 79;
+            this.label34.Text = "右";
+            // 
+            // label35
+            // 
+            this.label35.AutoSize = true;
+            this.label35.Location = new System.Drawing.Point(267, 260);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(33, 28);
+            this.label35.TabIndex = 80;
+            this.label35.Text = "右";
             // 
             // Form1
             // 
@@ -1179,8 +1165,6 @@
         private CheckBox checkBox8;
         private CheckBox checkBox7;
         private GroupBox groupBox5;
-        private TextBox textBox20;
-        private Label label20;
         private TextBox textBox21;
         private Label label21;
         private TextBox textBox22;
@@ -1192,7 +1176,6 @@
         private Button button5;
         private Button button4;
         private Button button3;
-        private Button button9;
         private Button button8;
         private Button button13;
         private Button button12;
@@ -1204,9 +1187,6 @@
         private Label label25;
         private TextBox textBox26;
         private Label label26;
-        private Button button14;
-        private TextBox textBox27;
-        private Label label27;
         private Button button18;
         private TextBox textBox30;
         private Label label30;
@@ -1221,5 +1201,10 @@
         private Label label32;
         private TextBox textBox32;
         private Label label33;
+        private Label label27;
+        private Label label35;
+        private Label label34;
+        private TextBox textBox33;
+        private TextBox textBox27;
     }
 }

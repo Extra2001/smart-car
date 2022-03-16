@@ -1,8 +1,6 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
-extern char WF_comm;              //控制指令
-extern unsigned char wf_rec_flag; // WIFI上位机控制标志位
 extern float pitch, roll, yaw;    //欧拉角
 extern short aacx, aacy, aacz;    //加速度传感器原始数据
 extern short gyrox, gyroy, gyroz; //陀螺仪原始数据
@@ -22,7 +20,6 @@ extern char LB_Light;             //左后灯状态
 extern char RB_Light;             //右后灯状态
 extern char Is_Display;           //是否通过串口发送图像
 extern char ctrl_comm;            //上一次的指令
-extern char turn_speed_duty;
 
 extern unsigned char left_speed;
 extern unsigned char right_speed;

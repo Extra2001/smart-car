@@ -21,18 +21,13 @@
 
 //全局变量定义
 unsigned int speed_count = 0; //占空比计数器 50次一周期
-char left_speed_duty = SPEED_DUTY;
-char right_speed_duty = SPEED_DUTY;
-char turn_speed_duty = 0;
+char left_front_speed_duty = SPEED_DUTY, left_behind_speed_duty = SPEED_DUTY;
+char right_front_speed_duty = SPEED_DUTY, right_behind_speed_duty = SPEED_DUTY;
 
 unsigned char tick_5ms = 0;   // 5ms计数器，作为主函数的基本周期
 unsigned char tick_200ms = 0; //刷新LED闪烁显示
 
-unsigned char HalfSpeed = 0;
-
-char ctrl_comm = COMM_STOP;    //控制指令
-char WF_comm = COMM_STOP;      //控制指令
-unsigned char wf_rec_flag = 0; // WIFI上位机控制标志位
+char ctrl_comm = COMM_STOP; //控制指令
 
 unsigned char duoji_count = 0;
 unsigned char zhuanjiao = 11;
@@ -60,36 +55,6 @@ void GetIMUData(void)
     MPU_Get_Accelerometer(&aacx, &aacy, &aacz);
 }
 
-//控制信号接收
-void SignalReceive(void)
-{
-    atk_8266_wifista_Rece();
-    if (wf_rec_flag == 1) //接收到WIFI信号
-    {
-        wf_rec_flag = 0;
-        switch (WF_comm)
-        {
-        case COMM_UP:
-            ctrl_comm = COMM_UP;
-            break; //前进指令
-        case COMM_DOWN:
-            ctrl_comm = COMM_DOWN;
-            break; //后退指令
-        case COMM_LEFT:
-            ctrl_comm = COMM_LEFT;
-            break; //左转指令
-        case COMM_RIGHT:
-            ctrl_comm = COMM_RIGHT;
-            break; //右转指令
-        case COMM_STOP:
-            ctrl_comm = COMM_STOP;
-            break; //停车指令
-        default:
-            break;
-        }
-    }
-}
-
 void func_5ms(void)
 {
     key = KEY_Scan(0);
@@ -98,10 +63,10 @@ void func_5ms(void)
     else if (key == KEY2_PRES) //按键2：是否循迹行车
         ToggleSearchLine();
 
+    BrightCheck();           //执行环境光亮度检测
+    atk_8266_wifista_Rece(); //控制信号接收
+    Move();                  //小车运动控制
     avg_speed = (left_speed + right_speed) / 2;
-    BrightCheck();   //执行环境光亮度检测
-    SignalReceive(); //控制信号接收
-    Move();          //小车运动控制
 }
 
 void func_200ms(void)

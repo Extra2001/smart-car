@@ -3,16 +3,15 @@
 
 extern unsigned int speed_count; //占空比计数器 50次一周期
 
-extern char left_speed_duty;
-extern char right_speed_duty;
-extern char turn_speed_duty;
+extern char left_front_speed_duty;
+extern char left_behind_speed_duty;
+extern char right_front_speed_duty;
+extern char right_behind_speed_duty;
 
 void MotorGPIO_Configuration(void);
+void SetSpeedDutyAll(char);
+void SetSpeedDutySide(char, char);
+void SetSpeedDuty(char, char, char, char);
 void CarMove(void);
-void CarGo(void);
-void CarBack(void);
-void CarLeft(void);
-void CarRight(void);
-void CarStop(void);
 void MotorInit(void);
 #endif

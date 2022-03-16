@@ -2,13 +2,11 @@
 #include "interface.h"
 #include "stm32f10x.h"
 
-extern char turn_on;
-
 // 初始化电机
 void MotorInit(void)
 {
     MotorGPIO_Configuration();
-    CarStop();
+    SetSpeedDutyAll(0);
 }
 
 // GPIO配置函数
@@ -42,125 +40,118 @@ void MotorGPIO_Configuration(void)
     GPIO_Init(BEHIND_RIGHT_B_GPIO, &GPIO_InitStructure);
 }
 
+void SetSpeedDuty(char lf, char lb, char rf, char rb)
+{
+    left_front_speed_duty = lf;
+    left_behind_speed_duty = lb;
+    right_front_speed_duty = rf;
+    right_behind_speed_duty = rb;
+}
+
+void SetSpeedDutyAll(char duty)
+{
+    left_behind_speed_duty = left_front_speed_duty = duty;
+    right_behind_speed_duty = right_front_speed_duty = duty;
+}
+
+void SetSpeedDutySide(char left, char right)
+{
+    left_behind_speed_duty = left_front_speed_duty = left;
+    right_behind_speed_duty = right_front_speed_duty = right;
+}
+
 //根据占空比驱动电机转动，应由中断调用
 void CarMove(void)
 {
-    //左轮
-    if (left_speed_duty > 0) //向前
+    if (left_front_speed_duty >= 0)
     {
-        if (speed_count <= left_speed_duty)
+        if (speed_count < left_front_speed_duty)
         {
             FRONT_LEFT_GO;
+        }
+        else
+        {
+            FRONT_LEFT_STOP;
+        }
+    }
+    else
+    {
+        if (speed_count < -left_front_speed_duty)
+        {
+            FRONT_LEFT_BACK;
+        }
+        else
+        {
+            FRONT_LEFT_STOP;
+        }
+    }
+
+    if (left_behind_speed_duty >= 0)
+    {
+        if (speed_count < left_behind_speed_duty)
+        {
             BEHIND_LEFT_GO;
         }
         else
         {
-            FRONT_LEFT_STOP;
             BEHIND_LEFT_STOP;
         }
     }
-    else if (left_speed_duty < 0) //向后
+    else
     {
-        if (speed_count <= (-1) * left_speed_duty)
+        if (speed_count < -left_behind_speed_duty)
         {
-            FRONT_LEFT_BACK;
             BEHIND_LEFT_BACK;
         }
         else
         {
-            FRONT_LEFT_STOP;
             BEHIND_LEFT_STOP;
         }
     }
-    else //停止
+
+    if (right_front_speed_duty >= 0)
     {
-        FRONT_LEFT_STOP;
-        BEHIND_LEFT_STOP;
-    }
-    //右轮
-    if (right_speed_duty > 0) //向前
-    {
-        if (speed_count <= right_speed_duty)
+        if (speed_count < right_front_speed_duty)
         {
-            BEHIND_RIGHT_GO;
             FRONT_RIGHT_GO;
         }
-        else //停止
+        else
         {
-            BEHIND_RIGHT_STOP;
             FRONT_RIGHT_STOP;
         }
     }
-    else if (right_speed_duty < 0) //向后
+    else
     {
-        if (speed_count <= (-1) * right_speed_duty)
+        if (speed_count < -right_front_speed_duty)
         {
-            FRONT_RIGHT_BACK;
+            FRONT_LEFT_BACK;
+        }
+        else
+        {
+            FRONT_RIGHT_STOP;
+        }
+    }
+
+    if (right_behind_speed_duty >= 0)
+    {
+        if (speed_count < right_behind_speed_duty)
+        {
+            BEHIND_RIGHT_GO;
+        }
+        else
+        {
+            BEHIND_RIGHT_STOP;
+        }
+    }
+    else
+    {
+        if (speed_count < -right_behind_speed_duty)
+        {
             BEHIND_RIGHT_BACK;
         }
-        else //停止
+        else
         {
-            FRONT_RIGHT_STOP;
             BEHIND_RIGHT_STOP;
         }
     }
-    else //停止
-    {
-        FRONT_RIGHT_STOP;
-        BEHIND_RIGHT_STOP;
-    }
-}
-
-//向前
-void CarGo(void)
-{
-    if (HalfSpeed)
-        right_speed_duty = left_speed_duty = SPEED_DUTY / 2;
-    else
-        right_speed_duty = left_speed_duty = SPEED_DUTY;
-}
-
-//后退
-void CarBack(void)
-{
-    if (HalfSpeed)
-        right_speed_duty = left_speed_duty = -SPEED_DUTY / 2;
-    else
-        right_speed_duty = left_speed_duty = -SPEED_DUTY;
-}
-
-//向左
-void CarLeft(void)
-{
-    if (HalfSpeed)
-    {
-        right_speed_duty = SPEED_DUTY / 2;
-        left_speed_duty = -SPEED_DUTY / 2;
-    }
-    else
-    {
-        right_speed_duty = SPEED_DUTY;
-        left_speed_duty = -SPEED_DUTY;
-    }
-}
-
-//向右
-void CarRight(void)
-{
-    if (HalfSpeed)
-    {
-        right_speed_duty = -SPEED_DUTY / 2;
-        left_speed_duty = SPEED_DUTY / 2;
-    }
-    else
-    {
-        right_speed_duty = 0;
-        left_speed_duty = SPEED_DUTY;
-    }
-}
-
-//停止
-void CarStop(void)
-{
-    right_speed_duty = left_speed_duty = 0;
 }

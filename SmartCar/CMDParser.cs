@@ -31,15 +31,16 @@ namespace SmartCar
         public bool rf_light { get; set; }
         public bool lb_light { get; set; }
         public bool rb_light { get; set; }
-        public string duty_left { get; set; }
-        public string duty_right { get; set; }
+        public string duty_left_front { get; set; }
+        public string duty_left_behind { get; set; }
+        public string duty_right_front { get; set; }
+        public string duty_right_behind { get; set; }
         public string kp { get; set; }
         public string ki { get; set; }
         public string kd { get; set; }
-        public string factor { get; set; }
-        public string striaght_duty { get; set; }
-        public string turn_duty { get; set; }
-        public string pid_on { get; set; }
+        public string front_duty { get; set; }
+        public string behind_duty { get; set; }
+        public string search_line_mode { get; set; }
     }
 
     public enum DataType
@@ -97,15 +98,16 @@ namespace SmartCar
                     rf_light = String2Bool(arr[22]),
                     lb_light = String2Bool(arr[23]),
                     rb_light = String2Bool(arr[24]),
-                    duty_left = arr[25],
-                    duty_right = arr[26],
-                    kp = arr[27],
-                    ki = arr[28],
-                    kd = arr[29],
-                    factor = arr[30],
-                    striaght_duty = arr[31],
-                    turn_duty = arr[32],
-                    pid_on = arr[33]
+                    duty_left_front = arr[25],
+                    duty_left_behind = arr[26],
+                    duty_right_front = arr[27],
+                    duty_right_behind = arr[28],
+                    kp = arr[29],
+                    ki = arr[30],
+                    kd = arr[31],
+                    front_duty = arr[32],
+                    behind_duty = arr[33],
+                    search_line_mode = arr[34]
                 };
                 return (dataType, carData);
             }

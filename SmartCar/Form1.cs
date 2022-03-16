@@ -49,8 +49,10 @@ namespace SmartCar
             textBox7.Text = carData.avg_speed;
             textBox10.Text = carData.left_speed;
             textBox9.Text = carData.right_speed;
-            textBox19.Text = carData.duty_left;
-            textBox18.Text = carData.duty_right;
+            textBox19.Text = carData.duty_left_front;
+            textBox18.Text = carData.duty_left_behind;
+            textBox27.Text = carData.duty_right_front;
+            textBox33.Text = carData.duty_right_behind;
             textBox12.Text = carData.temp_IMU;
             textBox11.Text = carData.aacx;
             textBox14.Text = carData.aacy;
@@ -61,9 +63,8 @@ namespace SmartCar
             textBox23.Text = carData.kp;
             textBox22.Text = carData.ki;
             textBox21.Text = carData.kd;
-            textBox20.Text = carData.factor;
-            textBox31.Text = carData.striaght_duty;
-            textBox29.Text = carData.turn_duty;
+            textBox31.Text = carData.front_duty;
+            textBox29.Text = carData.behind_duty;
             checkBox10.Checked = carData.lf_light;
             checkBox9.Checked = carData.rf_light;
             checkBox12.Checked = carData.lb_light;
@@ -76,7 +77,7 @@ namespace SmartCar
             checkBox4.Checked = carData.search_r;
             checkBox7.Checked = carData.red_light;
             checkBox8.Checked = carData.green_light;
-            textBox32.Text = carData.pid_on;
+            textBox32.Text = carData.search_line_mode;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -121,13 +122,6 @@ namespace SmartCar
             else label32.Text = "·¢ËÍÊ§°Ü";
         }
 
-        private void button9_Click(object sender, EventArgs e)
-        {
-            if (TCPHelper.SendString("cmotion 0"))
-                label32.Text = "·¢ËÍ³É¹¦";
-            else label32.Text = "·¢ËÍÊ§°Ü";
-        }
-
         private void button8_Click(object sender, EventArgs e)
         {
             if (TCPHelper.SendString("cmotion 1"))
@@ -137,7 +131,7 @@ namespace SmartCar
 
         private void button15_Click(object sender, EventArgs e)
         {
-            if (TCPHelper.SendString("cmotion 2"))
+            if (TCPHelper.SendString("cmotion 0"))
                 label32.Text = "·¢ËÍ³É¹¦";
             else label32.Text = "·¢ËÍÊ§°Ü";
         }
@@ -170,23 +164,16 @@ namespace SmartCar
             else label32.Text = "·¢ËÍÊ§°Ü";
         }
 
-        private void button14_Click(object sender, EventArgs e)
-        {
-            if (TCPHelper.SendString($"cfactor {textBox27.Text}"))
-                label32.Text = "·¢ËÍ³É¹¦";
-            else label32.Text = "·¢ËÍÊ§°Ü";
-        }
-
         private void button16_Click(object sender, EventArgs e)
         {
-            if (TCPHelper.SendString($"cstra {textBox28.Text}"))
+            if (TCPHelper.SendString($"cfront {textBox28.Text}"))
                 label32.Text = "·¢ËÍ³É¹¦";
             else label32.Text = "·¢ËÍÊ§°Ü";
         }
 
         private void button18_Click(object sender, EventArgs e)
         {
-            if (TCPHelper.SendString($"cturn {textBox30.Text}"))
+            if (TCPHelper.SendString($"cbehind {textBox30.Text}"))
                 label32.Text = "·¢ËÍ³É¹¦";
             else label32.Text = "·¢ËÍÊ§°Ü";
         }
