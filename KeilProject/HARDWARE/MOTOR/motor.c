@@ -2,6 +2,8 @@
 #include "interface.h"
 #include "stm32f10x.h"
 
+extern char turn_on;
+
 // 初始化电机
 void MotorInit(void)
 {
@@ -46,7 +48,7 @@ void CarMove(void)
     //左轮
     if (left_speed_duty > 0) //向前
     {
-        if (speed_count < left_speed_duty)
+        if (speed_count <= left_speed_duty)
         {
             FRONT_LEFT_GO;
             BEHIND_LEFT_GO;
@@ -59,7 +61,7 @@ void CarMove(void)
     }
     else if (left_speed_duty < 0) //向后
     {
-        if (speed_count < (-1) * left_speed_duty)
+        if (speed_count <= (-1) * left_speed_duty)
         {
             FRONT_LEFT_BACK;
             BEHIND_LEFT_BACK;
@@ -78,7 +80,7 @@ void CarMove(void)
     //右轮
     if (right_speed_duty > 0) //向前
     {
-        if (speed_count < right_speed_duty)
+        if (speed_count <= right_speed_duty)
         {
             BEHIND_RIGHT_GO;
             FRONT_RIGHT_GO;
@@ -91,7 +93,7 @@ void CarMove(void)
     }
     else if (right_speed_duty < 0) //向后
     {
-        if (speed_count < (-1) * right_speed_duty)
+        if (speed_count <= (-1) * right_speed_duty)
         {
             FRONT_RIGHT_BACK;
             BEHIND_RIGHT_BACK;
@@ -152,7 +154,7 @@ void CarRight(void)
     }
     else
     {
-        right_speed_duty = -SPEED_DUTY;
+        right_speed_duty = 0;
         left_speed_duty = SPEED_DUTY;
     }
 }

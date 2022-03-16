@@ -12,7 +12,7 @@
 extern float Kp;
 extern float Ki;
 extern float Kd;
-extern float factor;
+extern char turn_speed_duty;
 extern char pid_on;
 extern char striaght_duty;
 extern char turn_duty;
@@ -245,17 +245,18 @@ void atk_8266_wifista_Init(void)
 
     // while(atk_8266_send_cmd("AT+CIPSEND","OK",20));         //开始透传
     atk_8266_send_cmd("AT+CIPSEND", "OK", 20); //开始透传
-    myfree(p); //释放内存
+    myfree(p);                                 //释放内存
 }
 
 void atk_8266_wifista_Tran(void)
 {
-    u8 *p;
-    p = mymalloc(300); //申请150字节内存
-    sprintf((char *)p, "AA,55,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%f,%d,%d,%d,55,AA",
-            distance_tran, avg_speed, left_speed, right_speed, tempIMU, aacx, aacy, aacz, gyrox, gyroy, gyroz, Bright_check, void_left, void_right, Search_L, Search_M, Search_R, Red_light, Green_light, LF_Light, RF_Light, LB_Light, RB_Light, left_speed_duty, right_speed_duty, Kp, Ki, Kd, factor, striaght_duty, turn_duty, pid_on);
-    u3_printf("%s", p); //通过串口3发送至WIFI模块，再透传至上位机
-    myfree(p);
+    // u8 *p;
+    // p = malloc(512); //申请150字节内存
+    // sprintf((char *)p, "AA,55,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%f,%d,%d,%d,55,AA",
+    //         distance_tran, avg_speed, left_speed, right_speed, tempIMU, aacx, aacy, aacz, gyrox, gyroy, gyroz, Bright_check, void_left, void_right, Search_L, Search_M, Search_R, Red_light, Green_light, LF_Light, RF_Light, LB_Light, RB_Light, left_speed_duty, right_speed_duty, Kp, Ki, Kd, factor, striaght_duty, turn_duty, pid_on);
+    u3_printf("AA,55,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%d,%d,%d,%d,55,AA",
+              distance_tran, avg_speed, left_speed, right_speed, tempIMU, aacx, aacy, aacz, gyrox, gyroy, gyroz, Bright_check, void_left, void_right, Search_L, Search_M, Search_R, Red_light, Green_light, LF_Light, RF_Light, LB_Light, RB_Light, left_speed_duty, right_speed_duty, Kp, Ki, Kd, turn_speed_duty, striaght_duty, turn_duty, pid_on); //通过串口3发送至WIFI模块，再透传至上位机
+    // free(p);
 }
 
 void accept(void)
@@ -314,7 +315,7 @@ void atk_8266_wifista_Rece(void) //接收单字节控制指令
 {
     u16 rlen = 0;
     int tmp = 0;
-    char *cmd = mymalloc(32);
+    char cmd[32];
     if (USART3_RX_STA & 0X8000) //接收到一次数据了
     {
         rlen = USART3_RX_STA & 0X7FFF; //得到本次接收到的数据长度
@@ -326,7 +327,7 @@ void atk_8266_wifista_Rece(void) //接收单字节控制指令
         {
             sscanf((char *)USART3_RX_BUF, "%s", cmd);
             if (strcmp(cmd, "cfactor") == 0)
-                sscanf((char *)USART3_RX_BUF, "%*s %f", &factor), accept();
+                sscanf((char *)USART3_RX_BUF, "%*s %d", &tmp), turn_speed_duty = tmp, accept();
             else if (strcmp(cmd, "cmotion") == 0)
                 switch_pid(), accept();
             else if (strcmp(cmd, "cpid") == 0)
@@ -342,5 +343,5 @@ void atk_8266_wifista_Rece(void) //接收单字节控制指令
             else if (strcmp(cmd, "cturn") == 0)
                 sscanf((char *)USART3_RX_BUF, "%*s %d", &tmp), turn_duty = tmp, accept();
         }
-    }
+    }	
 }

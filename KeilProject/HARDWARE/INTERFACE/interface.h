@@ -260,7 +260,7 @@ BEHIND_RIGHT_B_PIN	PE12	    右后后退IO
 #define BEHIND_RIGHT_STOP  BEHIND_RIGHT_F_RESET;BEHIND_RIGHT_B_RESET
 
 //车速占空比定义
-#define SPEED_DUTY 40	//默认占空比 按1ms最小分辨率 周期50ms计算
+#define SPEED_DUTY 50	//默认占空比 按1ms最小分辨率 周期50ms计算
 
 //指令定义
 #define COMM_STOP  'e'//停止

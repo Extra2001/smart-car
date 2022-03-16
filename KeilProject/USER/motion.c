@@ -11,8 +11,9 @@ char move_status = 0;            // 0:按指令行车, 1:等待循迹启停板, 
 char change_mode_counter = 0;
 char pid_on = 0; // 0:差速因子,1:PID,2:占空比
 float Kp = 30, Ki = 0.1, Kd = 0.1;
-float factor = 0.3; // 差速因子
+float factor = 0; // 差速因子
 char striaght_duty = 50, turn_duty = 10;
+char turn_on = 0;
 
 void ToggleSearchLine(void)
 {
@@ -43,6 +44,10 @@ void CalcPID(void)
 {
     P = error;
     I = I + error;
+    if (I > 20)
+        I = 20;
+    if (I < -20)
+        I = -20;
     D = error - previous_error;
     PID_value = (Kp * P) + (Ki * I) + (Kd * D);
     previous_error = error;
@@ -61,15 +66,17 @@ void SearchLine(void) //从传感器输出判断各路是否检测到黑线，�
         move_status = 2;
         return;
     }
+    turn_on = 0;
     switch (pid_on)
     {
-    case 0:
+    case 3:
+        left_speed_duty = right_speed_duty = SPEED_DUTY;
         if (Search_L == BLACK_AREA)
-            left_speed_duty = SPEED_DUTY * factor, right_speed_duty = SPEED_DUTY;
+            turn_on = 2;
         else if (Search_R == BLACK_AREA)
-            left_speed_duty = SPEED_DUTY, right_speed_duty = SPEED_DUTY * factor;
+            turn_on = 1;
         else if (Search_M == BLACK_AREA)
-            left_speed_duty = SPEED_DUTY, right_speed_duty = SPEED_DUTY;
+            turn_on = 0;
         break;
     case 1:
         if (Search_L == BLACK_AREA)

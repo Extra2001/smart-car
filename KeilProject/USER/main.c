@@ -23,6 +23,7 @@
 unsigned int speed_count = 0; //占空比计数器 50次一周期
 char left_speed_duty = SPEED_DUTY;
 char right_speed_duty = SPEED_DUTY;
+char turn_speed_duty = 0;
 
 unsigned char tick_5ms = 0;   // 5ms计数器，作为主函数的基本周期
 unsigned char tick_200ms = 0; //刷新LED闪烁显示
@@ -134,7 +135,7 @@ int main(void)
 
     //=========================================================================
     // WIFI模块上电自动进入透传模式，如不需要修改WIFI配置，可将初始化部分注释掉
-    // atk_8266_wifista_Init();
+    atk_8266_wifista_Init();
     //=========================================================================
 
     //=======以下为主函数大循环==============================================

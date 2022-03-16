@@ -22,15 +22,17 @@ extern char LB_Light;             //左后灯状态
 extern char RB_Light;             //右后灯状态
 extern char Is_Display;           //是否通过串口发送图像
 extern char ctrl_comm;            //上一次的指令
+extern char turn_speed_duty;
 
 extern unsigned char left_speed;
 extern unsigned char right_speed;
 extern unsigned char avg_speed;
 
+extern char turn_on;
+
 extern float Kp;
 extern float Ki;
 extern float Kd;
-extern float factor;
 extern char pid_on;
 
 void ToggleSearchLine(void);
