@@ -20,7 +20,6 @@ extern char LB_Light;             //左后灯状态
 extern char RB_Light;             //右后灯状态
 extern char Is_Display;           //是否通过串口发送图像
 extern char ctrl_comm;            //上一次的指令
-extern short avg_distance;
 
 extern unsigned char left_speed;
 extern unsigned char right_speed;

@@ -7,12 +7,10 @@
 // PID 控制量
 float Kp = 40, Ki = 0.25, Kd = 0.3;
 float error = 0, previous_error = 0, P = 0, I = 0, D = 0, PID_value = 0;
-char ctrl_comm_last = COMM_STOP;       //上一次的指令
-char move_status = 0;                  // 0:按指令行车, 1:等待循迹启停板撤除, 2:循迹中
-char search_line_mode = 0;             // 0:差速因子,1:PID,2:占空比
-char front_duty = 10, behind_duty = 8; // 转弯时的前后轮占空比
-extern short aacz;
-extern short avg_distance;
+char ctrl_comm_last = COMM_STOP;      //上一次的指令
+char move_status = 0;                 // 0:按指令行车, 1:等待循迹启停板撤除, 2:循迹中
+char search_line_mode = 0;            // 0:差速因子,1:PID,2:占空比
+char front_duty = 5, behind_duty = 1; // 转弯时的前后轮占空比
 char lfsdbak = 0, lbsdbak = 0, rfsdbak = 0, rbsdbak = 0;
 
 void ToggleSearchLine(void)
@@ -60,9 +58,10 @@ void SearchLine(void)
 
     if (Search_L == BLACK_AREA && Search_M == BLACK_AREA && Search_R == BLACK_AREA)
     {
-        if (void_left == BARRIER_N)
+        if (void_left)
         {
             SetSpeedDutyAll(0);
+            lfsdbak = lbsdbak = rfsdbak = rbsdbak = 0;
             return;
         }
     }
@@ -123,27 +122,27 @@ void FollowInstruction(void)
 
 void Upward()
 {
-    if (distance_cm < 8)
+    if (distance_cm < 5)
+    {
+        SetSpeedDutyAll(-15);
+    }
+    else if (distance_cm < 8)
     {
         SetSpeedDutyAll(0);
     }
-    else if (!avg_distance)
+    else if (distance_cm < 10)
     {
-        if (distance_cm < 15)
-        {
-            SearchLine();
-            SetSpeedDuty(lfsdbak / 6, lbsdbak / 6, rfsdbak / 6, rbsdbak / 6);
-        }
-        else if (distance_cm < 30)
-        {
-            SearchLine();
-            SetSpeedDuty(lfsdbak / 4, lbsdbak / 4, rfsdbak / 4, rbsdbak / 4);
-        }
-        else
-        {
-            SearchLine();
-            SetSpeedDuty(lfsdbak, lbsdbak, rfsdbak, rbsdbak);
-        }
+        SetSpeedDutyAll(15);
+    }
+    else if (distance_cm < 15)
+    {
+        SearchLine();
+        SetSpeedDuty(lfsdbak / 6, lbsdbak / 6, rfsdbak / 6, rbsdbak / 6);
+    }
+    else if (distance_cm < 30)
+    {
+        SearchLine();
+        SetSpeedDuty(lfsdbak / 4, lbsdbak / 4, rfsdbak / 4, rbsdbak / 4);
     }
     else
     {

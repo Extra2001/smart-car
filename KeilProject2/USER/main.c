@@ -45,7 +45,6 @@ char Search_L = 0, Search_M = 0, Search_R = 0;               //循迹结果，1：有黑
 char LF_Light = 0, RF_Light = 0, LB_Light = 0, RB_Light = 0; //车灯状态，1：开灯；0：关灯
 char dist[5] = {0}, cnt = 0;
 short tmp_dist = 0;
-short avg_distance = 100;
 
 char Is_Display = 0; //是否通过串口发送视频
 char key = 0;        //按键输入
@@ -65,18 +64,6 @@ void GetVoidData()
     void_left = VOID_L_IO;
 }
 
-void GetDistance()
-{
-    tmp_dist += void_right;
-    cnt++;
-    if (cnt >= 10)
-    {
-        cnt = 0;
-        avg_distance = (tmp_dist + 0.5) / 10;
-        tmp_dist = 0;
-    }
-}
-
 void func_5ms(void)
 {
     key = KEY_Scan(0);
@@ -85,10 +72,9 @@ void func_5ms(void)
     else if (key == KEY2_PRES) //按键2：是否循迹行车
         ToggleSearchLine();
     GetVoidData();
-    GetDistance();
     GetDistanceDelay();
     BrightCheck();           //执行环境光亮度检测
-    atk_8266_wifista_Rece(); //控制信号接收
+    // atk_8266_wifista_Rece(); //控制信号接收
     Move();                  //小车运动控制
     avg_speed = (left_speed + right_speed) / 2;
 }
@@ -124,7 +110,7 @@ int main(void)
 
     //=========================================================================
     // WIFI模块上电自动进入透传模式，如不需要修改WIFI配置，可将初始化部分注释掉
-    // atk_8266_wifista_Init();
+    atk_8266_wifista_Init();
     //=========================================================================
 
     //=======以下为主函数大循环==============================================
