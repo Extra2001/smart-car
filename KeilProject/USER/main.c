@@ -71,7 +71,7 @@ void func_5ms(void)
 
 void func_200ms(void)
 {
-    GetIMUData();
+    // GetIMUData();
     LEDToggle(LED_PIN);      //用户指示灯闪烁,表明程序运行正常
     atk_8266_wifista_Tran(); // wifi发送数据至上位机 中速
 }
