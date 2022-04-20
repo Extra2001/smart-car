@@ -13,9 +13,14 @@ namespace SmartCar
             textBox1.Text = TCPHelper.GetIP();
         }
 
+        private string img = "";
+        private List<byte> data = new List<byte>();
+        private int count = 0;
+        private bool receive = false;
         private void button1_Click(object sender, EventArgs e)
         {
             button1.Text = "等待连接...";
+
             TCPHelper.StartServer(Convert.ToInt32(textBox2.Text), () =>
             {
                 button1.Text = "关闭连接";
@@ -23,6 +28,10 @@ namespace SmartCar
                 textBox3.Text = TCPHelper.clientipe.Port.ToString();
                 TCPHelper.StartRecieve(res =>
                 {
+                    if (res.StartsWith("Hh"))
+                        receive = true;
+                    else if (res.StartsWith("hH"))
+                        receive = false;
                     res = res.Trim();
                     textBox5.Text = res;
                     var (a, b) = CMDParser.Parse(res);
@@ -34,13 +43,91 @@ namespace SmartCar
                     {
                         label32.Text = "指令已接收";
                     }
-                }, () =>
+                }, res =>
                 {
-                    button1.Text = "等待连接...";
-                    textBox4.Text = "";
-                    textBox3.Text = "";
-                });
+                    if (receive && count < 740)
+                    {
+                        Paint_bmp(res);
+                        count++;
+                    }
+                    else
+                    {
+                        hang = 0;
+                        lie = 0;
+                        count = 0;
+                    }
+                }, () =>
+               {
+                   button1.Text = "等待连接...";
+                   textBox4.Text = "";
+                   textBox3.Text = "";
+               });
             });
+        }
+
+        void Paint_bmp(byte[] Data)
+        {
+            bool isheight = false;
+            byte heightdate = 0;
+            for (int i = 0; i < Data.Length; i++)
+            {
+                if (isheight)                           //判断是否为高位
+                {
+                    isheight = false;
+                    heightdate = Data[i];
+                }
+                else
+                {
+                    isheight = true;                    //若为低8位,则转化颜色,并写入bmp
+                    Color c = RGB565ToRGB24(Data[i], heightdate);
+                    Write_Color(c);
+                }
+            }
+        }
+        Bitmap bmp = new Bitmap(320, 240);
+        int lie = 0;
+        int hang = 0;
+        void Write_Color(Color c)
+        {
+            bmp.SetPixel(lie, hang, c);
+            lie++;
+            if (lie == 320)
+            {
+                lie = 0;
+                try
+                {
+                    pictureBox1.Image = bmp.Clone() as Bitmap;
+                }
+                catch
+                {
+                }
+                hang++;
+            }
+            if (hang == 240)
+            {
+                hang = 0;
+            }
+        }
+
+        private Color RGB565ToRGB24(int RGB565_H, int RGB565_L)
+        {
+            int RGB565_MASK_RED = 0xF800;
+            int RGB565_MASK_GREEN = 0x07E0;
+            int RGB565_MASK_BLUE = 0x001F;
+            //int RGB565_MASK_RED = 0x7C00;
+            //int RGB565_MASK_GREEN = 0x03E0;
+            //int RGB565_MASK_BLUE = 0x001F;
+            int RGB565;
+            int R, G, B;
+            RGB565_H <<= 8;
+            RGB565 = RGB565_H | RGB565_L;
+            R = (RGB565 & RGB565_MASK_RED) >> 11;
+            G = (RGB565 & RGB565_MASK_GREEN) >> 5;
+            B = (RGB565 & RGB565_MASK_BLUE);
+            R <<= 3;
+            G <<= 2;
+            B <<= 3;
+            return Color.FromArgb(R, G, B);
         }
 
         private void Load_data(CarData carData)

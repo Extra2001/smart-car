@@ -46,7 +46,8 @@ char LF_Light = 0, RF_Light = 0, LB_Light = 0, RB_Light = 0; //车灯状态，1：开灯
 char Is_Display = 0; //是否通过串口发送视频
 char key = 0;        //按键输入
 
-extern u8 ov_sta; //在exit.c里面定义
+extern u8 ov_sta;   //在exit.c里面定义
+extern u8 ov_frame; //在timer.c里面定义
 
 void GetIMUData(void)
 {
@@ -62,7 +63,6 @@ void func_5ms(void)
         Is_Display = !Is_Display;
     else if (key == KEY2_PRES) //按键2：是否循迹行车
         ToggleSearchLine();
-
     BrightCheck();           //执行环境光亮度检测
     atk_8266_wifista_Rece(); //控制信号接收
     Move();                  //小车运动控制
@@ -74,11 +74,41 @@ void func_200ms(void)
     // GetIMUData();
     LEDToggle(LED_PIN);      //用户指示灯闪烁,表明程序运行正常
     atk_8266_wifista_Tran(); // wifi发送数据至上位机 中速
+    camera_refresh();        //更新显示
+}
+
+void camera_refresh(void)
+{
+    u32 j;
+    u16 color;
+    if (ov_sta) //有帧中断更新？
+    {
+        OV7670_RRST = 0; //开始复位读指针
+        OV7670_RCK_L;
+        OV7670_RCK_H;
+        OV7670_RCK_L;
+        OV7670_RRST = 1; //复位读指针结束
+        OV7670_RCK_H;
+        for (j = 0; j < 76800; j++)
+        {
+            OV7670_RCK_L;
+            color = GPIOC->IDR & 0XFF; //读数据
+            OV7670_RCK_H;
+            color <<= 8;
+            OV7670_RCK_L;
+            color |= GPIOC->IDR & 0XFF; //读数据
+            OV7670_RCK_H;
+        }
+        ov_sta = 0; //清零帧中断标记
+        ov_frame++;
+    }
 }
 
 //主函数
 int main(void)
 {
+    u8 OV7670i = 3, OV7670res = 0;
+
     delay_init_O();      //外部时钟选择
     delay_init();        //初始化延迟函数
     GPIOCLKInit();       //使能所有GPIO时钟
@@ -96,7 +126,20 @@ int main(void)
     USART3_Init(115200); //初始化串口3，波特率为115200，用于WIFI模块
     MPU_Init();          //初始化惯性测量模块
     mpu_dmp_init();      //初始化惯性测量模块DMP
-    EXTI8_Init();        //使能定时器捕获
+
+    while (OV7670i--) //尝试3次初始化OV7670
+    {
+        OV7670res = OV7670_Init();
+        if (OV7670res == 0)
+            break; //成功
+        else
+            Delayms(50); //失败
+    }
+    EXTI8_Init();               //使能定时器捕获
+    TIM6_Int_Init(10000, 7199); // 10Khz 计数频率,1 秒钟中断
+    if (OV7670res == 0)
+        OV7670_Window_Set(12, 176, 240, 320); //设置窗口
+    OV7670_CS = 0;
 
     //=========================================================================
     // WIFI模块上电自动进入透传模式，如不需要修改WIFI配置，可将初始化部分注释掉

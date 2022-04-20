@@ -59,26 +59,28 @@ namespace SmartCar
             });
         }
 
-        public static void StartRecieve(Action<string> callback, Action end)
+        public static void StartRecieve(Action<string> callback, Action<byte[]> callbackBytes, Action end)
         {
             if (timer != null) timer.Close();
-            timer = new System.Timers.Timer(200);
+            timer = new System.Timers.Timer(50);
             timer.Elapsed += (sender, args) =>
             {
                 if (client.Connected)
                 {
                     if (client.Available > 0)
                     {
+                        client.ReceiveTimeout = 50;
                         byte[] readBytes = new byte[client.Available];
                         client.Receive(readBytes);
                         string str = Encoding.ASCII.GetString(readBytes);
-                        callback.Invoke(str);
+                        callback?.Invoke(str);
+                        callbackBytes?.Invoke(readBytes);
                     }
                 }
                 else
                 {
                     StopRecieve();
-                    end.Invoke();
+                    end?.Invoke();
                 }
             };
             timer.Start();

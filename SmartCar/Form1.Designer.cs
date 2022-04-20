@@ -46,6 +46,11 @@
             this.textBox6 = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label35 = new System.Windows.Forms.Label();
+            this.label34 = new System.Windows.Forms.Label();
+            this.textBox33 = new System.Windows.Forms.TextBox();
+            this.textBox27 = new System.Windows.Forms.TextBox();
             this.textBox32 = new System.Windows.Forms.TextBox();
             this.label33 = new System.Windows.Forms.Label();
             this.textBox29 = new System.Windows.Forms.TextBox();
@@ -97,6 +102,7 @@
             this.textBox8 = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label27 = new System.Windows.Forms.Label();
             this.label32 = new System.Windows.Forms.Label();
             this.button18 = new System.Windows.Forms.Button();
             this.textBox30 = new System.Windows.Forms.TextBox();
@@ -121,15 +127,11 @@
             this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.label27 = new System.Windows.Forms.Label();
-            this.textBox27 = new System.Windows.Forms.TextBox();
-            this.textBox33 = new System.Windows.Forms.TextBox();
-            this.label34 = new System.Windows.Forms.Label();
-            this.label35 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -295,6 +297,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.pictureBox1);
             this.groupBox4.Controls.Add(this.label35);
             this.groupBox4.Controls.Add(this.label34);
             this.groupBox4.Controls.Add(this.textBox33);
@@ -355,6 +358,46 @@
             this.groupBox4.TabIndex = 7;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "状态信息（不可修改）";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(485, 571);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(278, 154);
+            this.pictureBox1.TabIndex = 81;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label35
+            // 
+            this.label35.AutoSize = true;
+            this.label35.Location = new System.Drawing.Point(267, 260);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(33, 28);
+            this.label35.TabIndex = 80;
+            this.label35.Text = "右";
+            // 
+            // label34
+            // 
+            this.label34.AutoSize = true;
+            this.label34.Location = new System.Drawing.Point(267, 220);
+            this.label34.Name = "label34";
+            this.label34.Size = new System.Drawing.Size(33, 28);
+            this.label34.TabIndex = 79;
+            this.label34.Text = "右";
+            // 
+            // textBox33
+            // 
+            this.textBox33.Location = new System.Drawing.Point(306, 257);
+            this.textBox33.Name = "textBox33";
+            this.textBox33.Size = new System.Drawing.Size(81, 34);
+            this.textBox33.TabIndex = 78;
+            // 
+            // textBox27
+            // 
+            this.textBox27.Location = new System.Drawing.Point(306, 217);
+            this.textBox27.Name = "textBox27";
+            this.textBox27.Size = new System.Drawing.Size(81, 34);
+            this.textBox27.TabIndex = 77;
             // 
             // textBox32
             // 
@@ -814,6 +857,15 @@
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "控制信息";
             // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(16, 525);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(96, 28);
+            this.label27.TabIndex = 72;
+            this.label27.Text = "转弯侧：";
+            // 
             // label32
             // 
             this.label32.AutoSize = true;
@@ -1038,47 +1090,6 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(16, 525);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(96, 28);
-            this.label27.TabIndex = 72;
-            this.label27.Text = "转弯侧：";
-            // 
-            // textBox27
-            // 
-            this.textBox27.Location = new System.Drawing.Point(306, 217);
-            this.textBox27.Name = "textBox27";
-            this.textBox27.Size = new System.Drawing.Size(81, 34);
-            this.textBox27.TabIndex = 77;
-            // 
-            // textBox33
-            // 
-            this.textBox33.Location = new System.Drawing.Point(306, 257);
-            this.textBox33.Name = "textBox33";
-            this.textBox33.Size = new System.Drawing.Size(81, 34);
-            this.textBox33.TabIndex = 78;
-            // 
-            // label34
-            // 
-            this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(267, 220);
-            this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(33, 28);
-            this.label34.TabIndex = 79;
-            this.label34.Text = "右";
-            // 
-            // label35
-            // 
-            this.label35.AutoSize = true;
-            this.label35.Location = new System.Drawing.Point(267, 260);
-            this.label35.Name = "label35";
-            this.label35.Size = new System.Drawing.Size(33, 28);
-            this.label35.TabIndex = 80;
-            this.label35.Text = "右";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(13F, 28F);
@@ -1100,6 +1111,7 @@
             this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
@@ -1206,5 +1218,6 @@
         private Label label34;
         private TextBox textBox33;
         private TextBox textBox27;
+        private PictureBox pictureBox1;
     }
 }

@@ -15,7 +15,7 @@ extern float Kd;
 extern char front_duty;
 extern char behind_duty;
 extern char search_line_mode;
-extern short avg_distance;
+extern volatile unsigned int distance_cm;
 
 // ATK-ESP8266 WIFI STA测试
 //用于测试TCP/UDP连接
@@ -228,7 +228,7 @@ void atk_8266_wifista_Init(void)
 
 void atk_8266_wifista_Tran(void)
 {
-    u3_printf("AA,55,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%d,%d,%d,55,AA", avg_distance, avg_speed, left_speed, right_speed, tempIMU, aacx, aacy, aacz, gyrox, gyroy, gyroz, Bright_check, void_left, void_right, Search_L, Search_M, Search_R, Red_light, Green_light, LF_Light, RF_Light, LB_Light, RB_Light, left_front_speed_duty, left_behind_speed_duty, right_front_speed_duty, right_behind_speed_duty, Kp, Ki, Kd, front_duty, behind_duty, search_line_mode);
+    u3_printf("AA,55,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%f,%f,%f,%d,%d,%d,55,AA", distance_tran, avg_speed, left_speed, right_speed, tempIMU, aacx, aacy, aacz, gyrox, gyroy, gyroz, Bright_check, void_left, void_right, Search_L, Search_M, Search_R, Red_light, Green_light, LF_Light, RF_Light, LB_Light, RB_Light, left_front_speed_duty, left_behind_speed_duty, right_front_speed_duty, right_behind_speed_duty, Kp, Ki, Kd, front_duty, behind_duty, search_line_mode);
 }
 
 void accept(void)
