@@ -74,34 +74,6 @@ void func_200ms(void)
     // GetIMUData();
     LEDToggle(LED_PIN);      //用户指示灯闪烁,表明程序运行正常
     atk_8266_wifista_Tran(); // wifi发送数据至上位机 中速
-    camera_refresh();        //更新显示
-}
-
-void camera_refresh(void)
-{
-    u32 j;
-    u16 color;
-    if (ov_sta) //有帧中断更新？
-    {
-        OV7670_RRST = 0; //开始复位读指针
-        OV7670_RCK_L;
-        OV7670_RCK_H;
-        OV7670_RCK_L;
-        OV7670_RRST = 1; //复位读指针结束
-        OV7670_RCK_H;
-        for (j = 0; j < 76800; j++)
-        {
-            OV7670_RCK_L;
-            color = GPIOC->IDR & 0XFF; //读数据
-            OV7670_RCK_H;
-            color <<= 8;
-            OV7670_RCK_L;
-            color |= GPIOC->IDR & 0XFF; //读数据
-            OV7670_RCK_H;
-        }
-        ov_sta = 0; //清零帧中断标记
-        ov_frame++;
-    }
 }
 
 //主函数
