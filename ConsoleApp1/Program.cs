@@ -1,25 +1,9 @@
-﻿string prin = "";
+﻿var files = Directory.GetFiles(@"D:\成图");
 
-for(int i = 1; i <=8; i++)
+int cnt = 0;
+foreach (var item in files)
 {
-    var lines = File.ReadAllLines(i + ".txt").ToList();
-    string print = "";
-    double sum = 0;
-    int cnt = 0;
-    foreach (var item in lines)
-    {
-        int index = item.IndexOf("Z: ");
-        string sub = item.Substring(index + 3);
-        double z = double.Parse(sub);
-        if (z != 0)
-        {
-            cnt++;
-            print += z + "\n";
-            sum += z;
-        }
-    }
-    print += sum / cnt + "\n";
-    prin += $"{i}: {sum / 33}\n";
-    File.WriteAllText("out" + i + ".txt", print);
+    cnt++;
+    // 重命名为cnt.jpg
+    File.Move(item, Path.Combine(@"D:\成图", cnt + ".jpg"));
 }
-File.WriteAllText("avg.txt", prin);
